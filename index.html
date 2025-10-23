@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Launch Countdown — 21:00, 23 October</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#02060a;
+    --neon1:#00ffd3;
+    --neon2:#29b3a6;
+    --muted:#93a7a5;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:
+    radial-gradient(800px 500px at 10% 10%, rgba(0,255,211,0.03), transparent 8%),
+    linear-gradient(180deg,var(--bg), #001216);color:#eaf9f6;overflow:hidden}
+  .wrap{min-height:100vh;display:grid;place-items:center;padding:2rem;position:relative}
+
+  .bg-photo {
+    position:fixed;
+    inset:0;
+    z-index:0;
+    background-image: url("background.jpeg");
+    background-size: cover;
+    background-position: center center;
+    filter: brightness(0.42) saturate(.95) contrast(1.02);
+    transform: scale(1.02);
+    pointer-events: none;
+  }
+
+  .stage{
+    width:min(780px,92vw);
+    padding:2rem;
+    border-radius:18px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    box-shadow:0 40px 120px rgba(0,0,0,0.7);
+    position:relative;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,0.03);
+    z-index:2;
+    backdrop-filter: blur(6px);
+  }
+
+  .title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.6rem);text-align:center;margin:0 0 8px;color:#fff;text-shadow:0 14px 44px rgba(0,255,211,0.06)}
+  .subtitle{color:var(--muted);text-align:center;margin:0 0 18px;font-weight:500}
+
+  .countdown{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap}
+  .unit{min-width:110px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.006));border-radius:12px;padding:14px 12px;text-align:center;position:relative;border:1px solid rgba(255,255,255,0.03);box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+  .label{font-size:.82rem;color:var(--muted);margin-bottom:8px}
+  .digits{display:flex;gap:10px;justify-content:center;align-items:flex-end}
+  .digit{width:44px;height:66px;border-radius:8px;background:linear-gradient(180deg, rgba(0,0,0,0.06), rgba(255,255,255,0.01));display:grid;place-items:center;font-weight:800;font-size:2.1rem;color:var(--neon1);text-shadow:0 6px 28px rgba(0,255,211,0.06);position:relative;overflow:visible}
+  .digit::after{content:'';position:absolute;inset:0;border-radius:8px;box-shadow:0 0 40px rgba(0,255,211,0.04) inset;pointer-events:none}
+  .morph-enter{transform:translateY(-26px) rotateX(18deg) scale(0.98);opacity:0}
+  .morph-active{transition:transform .58s cubic-bezier(.2,.9,.2,1),opacity .58s;transform:none;opacity:1}
+  .burst{position:absolute;left:50%;top:12px;transform:translateX(-50%);pointer-events:none}
+  .spark{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--neon1);opacity:0;mix-blend-mode:screen;box-shadow:0 6px 18px rgba(0,255,211,0.12)}
+  .grid-lines{position:absolute;inset:0;pointer-events:none;opacity:.06;background-image:
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size:160px 160px,160px 160px;transform-origin:center;animation: drift 20s linear infinite}
+  @keyframes drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(-80px,-40px,0)}}
+  .scan{position:absolute;left:-30%;top:50%;width:160%;height:2px;background:linear-gradient(90deg,transparent, rgba(0,255,211,0.06), transparent);mix-blend-mode:screen;filter:blur(8px);animation:scanmove 7s linear infinite;opacity:.9}
+  @keyframes scanmove{0%{transform:translateX(-20%)}50%{transform:translateX(20%)}100%{transform:translateX(120%)}}
+  canvas#particles{position:fixed;inset:-20%;width:140%;height:140%;z-index:1;filter:blur(6px);opacity:.85;mix-blend-mode:screen;pointer-events:none}
+  .hint{margin-top:14px;text-align:center;color:var(--muted);font-size:.9rem}
+  .fade-out{animation:fadeOut .9s ease-in forwards}
+  @keyframes fadeOut{to{opacity:0;transform:scale(.98)}}
+  @media (max-width:560px){
+    .digit{width:40px;height:56px;font-size:1.7rem}
+    .unit{min-width:86px;padding:12px}
+  }
+</style>
+</head>
+<body>
+  <div class="bg-photo" aria-hidden="true"></div>
+
+  <div class="wrap" role="main" aria-labelledby="countTitle">
+    <section class="stage" aria-live="polite">
+      <h1 id="countTitle" class="title">Countdown to Launch</h1>
+      <p class="subtitle">The site link will appear automatically at 21:00 on 23 October 2025</p>
+
+      <div class="countdown" id="countdown" role="status" aria-atomic="true">
+        <div class="unit" role="listitem" aria-label="Days remaining">
+          <div class="label">Days</div>
+          <div class="digits"><div class="digit" id="d1">0</div><div class="digit" id="d2">0</div></div>
+          <div class="burst" id="b-days"></div>
+        </div>
+
+        <div class="unit" role="listitem" aria-label="Hours remaining">
+          <div class="label">Hours</div>
+          <div class="digits"><div class="digit" id="h1">0</div><div class="digit" id="h2">0</div></div>
+          <div class="burst" id="b-hours"></div>
+        </div>
+
+        <div class="unit" role="listitem" aria-label="Minutes remaining">
+          <div class="label">Minutes</div>
+          <div class="digits"><div class="digit" id="m1">0</div><div class="digit" id="m2">0</div></div>
+          <div class="burst" id="b-mins"></div>
+        </div>
+
+        <div class="unit" role="listitem" aria-label="Seconds remaining">
+          <div class="label">Seconds</div>
+          <div class="digits"><div class="digit" id="s1">0</div><div class="digit" id="s2">0</div></div>
+          <div class="burst" id="b-secs"></div>
+        </div>
+      </div>
+
+      <div class="grid-lines" aria-hidden="true"></div>
+      <div class="scan" aria-hidden="true"></div>
+      <p class="hint">Waiting for 21:00 • 23 Oct 2025</p>
+      <canvas id="particles" aria-hidden="true"></canvas>
+    </section>
+  </div>
+
+<script>
+/* CONFIG: redirect target and exact launch moment (local time) */
+const MAIN_SITE_URL = 'https://ayushkr3092.github.io/department-page/'; // change to your main site page or URL
+const LAUNCH_LOCAL_ISO = '2025-10-23T21:00:00'; // 21:00 on 23 Oct 2025 local time
+
+/* Utility */
+const pad2 = n => String(n).padStart(2,'0');
+
+/* Particles background */
+(function particles(){
+  const canvas = document.getElementById('particles');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const DPR = Math.max(1, window.devicePixelRatio || 1);
+  function fit(){
+    canvas.width = innerWidth * DPR;
+    canvas.height = innerHeight * DPR;
+    canvas.style.width = innerWidth + 'px';
+    canvas.style.height = innerHeight + 'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  fit(); window.addEventListener('resize', fit);
+  const N = Math.max(26, Math.floor(innerWidth / 36));
+  const parts = Array.from({length:N}).map(()=>({
+    x: Math.random()*innerWidth, y: Math.random()*innerHeight,
+    r: Math.random()*1.6+0.6, vx:(Math.random()-0.5)*0.35, vy:(Math.random()-0.5)*0.12,
+    hue:170 + Math.random()*40
+  }));
+  function draw(){
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    for(const p of parts){
+      p.x += p.vx * (1 + Math.sin(performance.now()/4200 + p.r));
+      p.y += p.vy * (1 + Math.cos(performance.now()/3600 + p.r));
+      if (p.x < -20) p.x = innerWidth + 20;
+      if (p.x > innerWidth + 20) p.x = -20;
+      if (p.y < -20) p.y = innerHeight + 20;
+      if (p.y > innerHeight + 20) p.y = -20;
+      const g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*8);
+      g.addColorStop(0, `hsla(${p.hue},100%,60%,0.14)`);
+      g.addColorStop(0.6, `hsla(${p.hue},90%,55%,0.04)`);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r*6,0,Math.PI*2); ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* Digit animation + burst */
+function animateDigit(el, newVal, burstContainer){
+  if (!el) return;
+  const cur = el.textContent;
+  if (cur === String(newVal)) return;
+  el.classList.remove('morph-active');
+  el.classList.add('morph-enter');
+  requestAnimationFrame(()=> {
+    el.textContent = newVal;
+    el.classList.add('morph-active');
+    el.classList.remove('morph-enter');
+    if (burstContainer) createBurst(burstContainer, 10);
+  });
+}
+
+function createBurst(container, count=12){
+  if (!container) return;
+  for (let i=0;i<count;i++){
+    const s = document.createElement('div');
+    s.className = 'spark';
+    s.style.left = (50 + (Math.random()*120 - 60)) + 'px';
+    s.style.top = (8 + Math.random()*28) + 'px';
+    s.style.background = `hsl(${170 + Math.random()*40}, 100%, ${50 + Math.random()*8}%)`;
+    container.appendChild(s);
+    const dx = (Math.random()-0.5) * 160;
+    const dy = -40 - Math.random()*120;
+    const rot = (Math.random()-0.5) * 720;
+    s.animate([
+      { transform: 'translate(0,0) scale(0.2)', opacity:1 },
+      { transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(1.0)`, opacity:.8 },
+      { transform: `translate(${dx*1.4}px, ${dy*1.8}px) rotate(${rot*1.5}deg) scale(1.2)`, opacity:0 }
+    ], { duration: 700 + Math.random()*380, easing:'cubic-bezier(.2,.9,.2,1)', fill:'forwards' });
+    setTimeout(()=> s.remove(), 1400);
+  }
+}
+
+/* Countdown to exact local date/time (LAUNCH_LOCAL_ISO interpreted as local) */
+(function countdownToLaunch(){
+  const targetLocal = new Date(LAUNCH_LOCAL_ISO);
+  const d1 = document.getElementById('d1'), d2 = document.getElementById('d2');
+  const h1 = document.getElementById('h1'), h2 = document.getElementById('h2');
+  const m1 = document.getElementById('m1'), m2 = document.getElementById('m2');
+  const s1 = document.getElementById('s1'), s2 = document.getElementById('s2');
+  const bDays = document.getElementById('b-days'), bHours = document.getElementById('b-hours'), bMins = document.getElementById('b-mins'), bSecs = document.getElementById('b-secs');
+
+  function splitDigits(n){
+    const s = String(Math.max(0, Math.floor(n))).padStart(2,'0');
+    return [s.charAt(0), s.charAt(1)];
+  }
+
+  function update(){
+    const now = new Date();
+    let diff = Math.max(0, targetLocal - now);
+    const days = Math.floor(diff / (1000*60*60*24));
+    diff -= days * 24*60*60*1000;
+    const hours = Math.floor(diff / (1000*60*60));
+    diff -= hours * 60*60*1000;
+    const mins = Math.floor(diff / (1000*60));
+    diff -= mins * 60*1000;
+    const secs = Math.floor(diff / 1000);
+
+    const [dA,dB] = splitDigits(days > 99 ? days % 100 : days);
+    const [hA,hB] = splitDigits(hours);
+    const [mA,mB] = splitDigits(mins);
+    const [sA,sB] = splitDigits(secs);
+
+    animateDigit(d1, dA, bDays); animateDigit(d2, dB, bDays);
+    animateDigit(h1, hA, bHours); animateDigit(h2, hB, bHours);
+    animateDigit(m1, mA, bMins); animateDigit(m2, mB, bMins);
+    animateDigit(s1, sA, bSecs); animateDigit(s2, sB, bSecs);
+
+    if (targetLocal - now <= 0){
+      // final large celebration then redirect
+      createBurst(bDays, 30); createBurst(bHours, 30); createBurst(bMins, 30); createBurst(bSecs, 30);
+      const stage = document.querySelector('.stage');
+      if (stage) stage.classList.add('fade-out');
+      setTimeout(()=> { window.location.href = MAIN_SITE_URL; }, 1100);
+      clearInterval(timer);
+    }
+  }
+
+  // initial guard render
+  update();
+  const timer = setInterval(update, 900);
+})();
+</script>
+</body>
+</html>
